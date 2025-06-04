@@ -303,18 +303,23 @@
             color: #777;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
+            /* Removed opacity, visibility from here as they are now on .ad-link */
             display: flex; /* Use flexbox for centering content */
             justify-content: center; /* Center horizontally */
             align-items: center; /* Center vertically */
             overflow: hidden; /* Hide overflowing parts of the image */
         }
 
-        .ad-medium-rectangle.active {
-            opacity: 1;
-            visibility: visible;
+        /* Style for links wrapping images/ads - now controls visibility and clickability */
+        .ad-link {
+            display: none; /* Initially hidden and takes no space */
+            text-decoration: none; /* Remove underline from link */
+            color: inherit; /* Inherit text color */
+            transition: opacity 0.3s ease, visibility 0.3s ease; /* Smooth transition */
+        }
+
+        .ad-link.active { /* Use 'active' class for consistency with JS */
+            display: block; /* Show when active */
         }
 
         /* Styling for image inside the ad container */
@@ -324,13 +329,6 @@
             object-fit: contain; /* Scale image to fit, maintaining aspect ratio */
             border-radius: 8px; /* Match ad container border-radius */
         }
-
-        /* Style for links wrapping images/ads */
-        .ad-link {
-            display: block; /* Make the anchor tag fill its parent for clickability */
-            text-decoration: none; /* Remove underline from link */
-            color: inherit; /* Inherit text color */
-        }
     </style>
 </head>
 <body>
@@ -339,8 +337,7 @@
         <div id="gameCover">
             <div class="cover-content-card">
                 <p>A fun way to learn about safety and insurance.</p>
-                
-                <p>SAFETY FIRST !</p>
+                <p>SAFETY FIRST!</p>
                 <!-- Start button is now inside the gameCover -->
                 <button id="startButton" class="game-button"><span class="button-text">Play</span></button>
             </div>
@@ -355,7 +352,7 @@
         <div class="button-container">
             <!-- Medium Rectangle Ad (300x250) - Appears on Game Over -->
             <!-- Wrapped gameOverAd with an anchor tag -->
-            <a href="https://www.starhealth.in/" target="_blank" class="ad-link">
+            <a href="https://www.starhealth.in/" target="_blank" class="ad-link" id="gameOverAdLink">
                 <div id="gameOverAd" class="ad-medium-rectangle">
                     <img src="https://i.postimg.cc/G28twty2/500708087-1120920826742587-3969943424233215327-n.jpg" alt="Game Over - Get Star Health Insurance">
                 </div>
@@ -367,11 +364,10 @@
         <div id="gameOverModal" class="modal-overlay">
             <div class="modal-content">
                 <h2>C L A S H !</h2>
-                <!-- Wrapped gameOverImage with an anchor tag -->
-                <a href="https://www.starhealth.in/" target="_blank" class="ad-link">
+                <!-- Removed ad-link class from this a tag to ensure image visibility in modal -->
+                <a href="https://www.starhealth.in/" target="_blank">
                     <img id="gameOverImage" src="https://5.imimg.com/data5/AP/MO/MY-799628/star-accident-care-1-500x500.jpg" alt="Game Over - Get Star Health Insurance">
                 </a>
-                
                 <p><strong>Accident! Secure your well-being. Explore Star Health Insurance.</strong></p>
                 <div class="modal-buttons">
                     <button class="modal-button close-button" onclick="hideModalAndShowPostGame()">Okay, Got It!</button>
@@ -435,6 +431,7 @@
         const gameOverModal = document.getElementById('gameOverModal');
         const gameOverImage = document.getElementById('gameOverImage');
         const gameOverAd = document.getElementById('gameOverAd'); // Re-added reference
+        const gameOverAdLink = document.getElementById('gameOverAdLink'); // Get the ad link element
         const gameCover = document.getElementById('gameCover'); // Reference to the new game cover div
 
         // --- Image Loading ---
@@ -636,7 +633,7 @@
             // The gameCover should NOT be shown here. It only appears on initial load.
             // The restart button and ad will be shown after "Okay, Got It!"
             restartButton.style.display = 'none'; // Ensure hidden until "Okay, Got It!"
-            gameOverAd.classList.remove('active'); // Ensure hidden until "Okay, Got It!"
+            gameOverAdLink.style.display = 'none'; // Hide the ad link using display: none
         }
 
         // Game loop (animation)
@@ -675,7 +672,7 @@
             lastEnemySpawnTime = Date.now(); // Reset spawn timer
             gameCover.classList.add('hidden'); // Hide the game cover
             restartButton.style.display = 'none'; // Ensure restart button is hidden
-            gameOverAd.classList.remove('active'); // Ensure ad is hidden
+            gameOverAdLink.style.display = 'none'; // Ensure ad is hidden using display: none
             // gameLoop is already running, no need to call it here.
         }
 
@@ -751,7 +748,7 @@
         function hideModalAndShowPostGame() {
             gameOverModal.classList.remove('active'); // Hide the modal
             restartButton.style.display = 'inline-block'; // Show restart button
-            gameOverAd.classList.add('active'); // Show the medium rectangle ad
+            gameOverAdLink.style.display = 'block'; // Show the ad link using display: block
         }
 
         // Event listeners for buttons
