@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Star Health Insurance Game</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f2f5;
+            overflow: hidden; /* Prevent scrollbars */
+        }
+
+        .game-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px; /* Max width for the game area */
+            height: 80vh; /* Responsive height */
+            max-height: 700px; /* Max height for the game area */
+            background-color: #1e40af; /* Road background */
+            border-radius: 15px;
+            box-shadow: 0 10px 20px #1e40af;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Game Cover overlay */
+        #gameCover {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: none; /* No static background image */
+            background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black to show road/car underneath */
+            background-size: cover;
+            background-position: center;
+            z-index: 15; /* Above canvas, below modal */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+            font-size: 1.5em;
+            font-weight: bold;
+            border-radius: 15px; /* Match container border-radius */
+            padding: 20px; /* Add padding for content */
+            box-sizing: border-box; /* Include padding in width/height */
+            text-align: center;
+        }
+
+        #gameCover.hidden {
+            display: none;
+        }
+
+        #gameCover h2 {
+            font-size: 1.8em;
+            margin-bottom: 5px;
+            color: #fff; /* Ensure text is visible on background */
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+
+        #gameCover p {
+            font-size: 1.2em;
+            margin-top: 0;
+            margin-bottom: 30px;
+            color: #fff; /* Ensure text is visible on background */
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+
+
+        canvas {
+            background-color: #444; /* Darker road */
+            display: block;
+            width: 100%;
+            height: calc(100% - 80px); /* Adjust height for score/buttons */
+            border-radius: 10px;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .game-info {
+            width: 100%;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #1e40af;
+            color: #fff;
+            font-weight: bold;
+            border-bottom-left-radius: 15px;
+            border-bottom-right-radius: 15px;
+        }
+
+        .score-display {
+            font-size: 1.2em;
+        }
+
+        /* Style for the logo in the top right corner */
+        #gameLogo {
+            height: 40px; /* Adjust height as needed */
+            width: auto; /* Maintain aspect ratio */
+            max-width: 150px; /* Prevent logo from becoming too wide */
+            display: block; /* Ensure it behaves like a block element for alignment */
+        }
+
+        .button-container {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column; /* Stack ad and button vertically */
+            align-items: center; /* Center items horizontally */
+            gap: 15px; /* Space between ad and button */
+            z-index: 10;
+        }
+
+        .game-button {
+            padding: 12px 25px;
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #fff;
+            background: linear-gradient(145deg, #007bff, #0056b3); /* Default gradient */
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 123, 255, 0.4);
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Transparent background for Start Button on cover */
+        #gameCover #startButton {
+            background: rgba(0, 0, 0, 0.3); /* Semi-transparent black */
+            border: 2px solid rgba(255, 255, 255, 0.7); /* White border */
+            box-shadow: 0 5px 15px rgba(255, 255, 255, 0.2);
+            color: #fff;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            margin-top: 20px; /* Add some space below "Ready to Drive?" text */
+        }
+
+        #gameCover #startButton:hover {
+            background: rgba(0, 0, 0, 0.5);
+            box-shadow: 0 8px 20px rgba(255, 255, 255, 0.4);
+            transform: translateY(-2px);
+        }
+
+
+        .game-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px #1e40af;
+        }
+
+        .game-button:active {
+            transform: translateY(1px);
+            box-shadow: 0 3px 10px #1e40af;
+        }
+
+        .button-text {
+            /* To ensure text is above background image */
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Modal/Pop-up Styles */
+        .modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7); /* Darker overlay for modal */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            padding: 20px; /* Reduced padding */
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            max-width: 90%;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-content h2 {
+            color: #dc3545; /* Red for danger */
+            margin-bottom: 10px; /* Reduced margin */
+            font-size: 1.5em; /* Reduced font size */
+        }
+
+        .modal-content p {
+            font-size: 1em; /* Reduced font size */
+            color: #555;
+            line-height: 1.4; /* Reduced line height */
+            margin-bottom: 15px; /* Reduced margin */
+        }
+
+        .modal-buttons {
+            display: flex;
+            flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
+            justify-content: center;
+            gap: 15px; /* Space between buttons */
+            margin-top: 20px; /* Space above buttons */
+        }
+
+        .modal-content .modal-button {
+            padding: 12px 20px;
+            font-size: 1em;
+            font-weight: bold;
+            color: #fff;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 200, 0, 0.4);
+            transition: all 0.3s ease;
+            text-decoration: none; /* For the 'Get More Info' button which is an anchor */
+            display: inline-flex; /* For consistent button sizing */
+            align-items: center;
+            justify-content: center;
+            min-width: 100px; /* Ensure minimum width for buttons */
+        }
+
+        .modal-content .modal-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 200, 0, 0.6);
+        }
+
+        .modal-content .modal-button:active {
+            transform: translateY(1px);
+            box-shadow: 0 3px 10px rgba(0, 200, 0, 0.3);
+        }
+
+        /* Specific style for "Okay, Got It!" button */
+        .modal-content .close-button {
+            background: linear-gradient(145deg, #28a745, #218838); /* Green */
+        }
+
+        /* Specific style for "Get More Info" button */
+        .modal-content .more-info-button {
+            background: linear-gradient(145deg, #007bff, #0056b3); /* Blue */
+        }
+
+        #gameOverImage {
+            max-width: 90%;
+            height: auto;
+            margin-bottom: 15px;
+            border-radius: 8px;
+        }
+
+        /* Example for a medium rectangle ad within the game container (requires careful positioning) */
+        .ad-medium-rectangle {
+    width: 300px;
+    height: 250px;
+
+    /* Position relative to its parent (.button-container) for stacking */
+    position: relative;
+    margin-bottom: 50px; /* Space between ad and restart button */
+    text-align: center;
+    /* Removed line-height as it's not suitable for image centering */
+    font-size: 14px;
+    color: #777;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    /* Initially hidden */
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+
+    /* New properties for centering content (including images) */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+        .ad-medium-rectangle.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Style for links wrapping images/ads */
+        .ad-link {
+            display: block; /* Make the anchor tag fill its parent for clickability */
+            text-decoration: none; /* Remove underline from link */
+            color: inherit; /* Inherit text color */
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- Game Cover overlay -->
+        <div id="gameCover">
+            <h2>FAMILY ACCIDENT CARE</h2>
+            <p>INSURANCE POLICY</p>
+            <p>SAFETY FIRST !</p>
+            <!-- Start button is now inside the gameCover -->
+            <button id="startButton" class="game-button"><span class="button-text">Play</span></button>
+        </div>
+
+        <div class="game-info">
+            <div class="score-display">Score: <span id="score">0</span></div>
+            <!-- Replaced game-title with an image for the logo -->
+            <img id="gameLogo" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRzfv8vz8DcO8PhbVvOkr9Zirv07WQFUMWAuf1zAqYaKpW0xmm8xEo0BhznIixEgjuX4w&usqp=CAU" alt="Star Health Logo">
+        </div>
+        <canvas id="gameCanvas"></canvas>
+        <div class="button-container">
+            <!-- Medium Rectangle Ad (300x250) - Appears on Game Over -->
+            <!-- Wrapped gameOverAd with an anchor tag -->
+            <a href="https://www.starhealth.in/" target="_blank" class="ad-link">
+                <div id="gameOverAd" class="ad-medium-rectangle">
+
+                    <img id="gameOverImage" src="https://i.postimg.cc/G28twty2/500708087-1120920826742587-3969943424233215327-n.jpg" alt="Game Over - Get Star Health Insurance">
+                </div>
+            </a>
+            <!-- Restart button remains here, hidden by default -->
+            <button id="restartButton" class="game-button" style="display: none;"><span class="button-text">Restart Game</span></button>
+        </div>
+
+        <div id="gameOverModal" class="modal-overlay">
+            <div class="modal-content">
+                <h2>C L A S H !</h2>
+                <!-- Wrapped gameOverImage with an anchor tag -->
+                <a href="https://www.starhealth.in/" target="_blank" class="ad-link">
+                    <img id="gameOverImage" src="https://5.imimg.com/data5/AP/MO/MY-799628/star-accident-care-1-500x500.jpg" alt="Game Over - Get Star Health Insurance">
+                </a>
+                <p>Oh no! A collision can have real-world consequences. Don't let unexpected events derail your financial well-being.</p>
+                <p><strong>Protect yourself and your loved ones. Get Star Health Insurance now!</strong></p>
+                <div class="modal-buttons">
+                    <button class="modal-button close-button" onclick="hideModalAndShowPostGame()">Okay, Got It!</button>
+                    <a href="https://www.starhealth.in/" target="_blank" class="modal-button more-info-button">Get More Info</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get canvas and its context
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Game state variables
+        let gameRunning = false; // Initially false so cover screen is shown
+        let score = 0;
+        let animationFrameId;
+        let imagesLoaded = 0; // Counter for loaded images
+        // Only count images drawn on canvas for totalImagesToLoad
+        const totalImagesToLoad = 1 + 3; // Player car + 3 enemy cars
+
+        // Player car properties
+        const playerCar = {
+            width: 66,
+            height: 100,
+            x: 0, // Will be set on resize
+            y: 0, // Will be set on resize
+            speed: 5,
+            image: new Image()
+        };
+        playerCar.image.src = 'https://i.postimg.cc/VvkYfhx6/4.png'; // Placeholder for player car image
+
+        // Enemy cars properties
+        const enemyCars = [];
+        const enemyCarWidth = 66;
+        const enemyCarHeight = 120;
+        const enemyCarSpeed = 4;
+        const enemySpawnInterval = 1000; // milliseconds
+        let lastEnemySpawnTime = 0;
+        const enemyCarImagePaths = [
+            'https://i.postimg.cc/WzGMVdPj/1.png',
+'https://i.postimg.cc/WpgmgHqK/2.png',
+'https://i.postimg.cc/Mp088v1K/3.png', 
+         
+        ];
+        const loadedEnemyImages = []; // Array to store loaded Image objects
+
+        // Road properties
+        const roadLineHeight = 30;
+        const roadLineGap = 20;
+        let roadLineOffset = 0;
+        const roadLineSpeed = 5;
+
+        // Collision particles for the "collapse" effect
+        const collisionParticles = [];
+
+        // Score display and buttons
+        const scoreDisplay = document.getElementById('score');
+        const startButton = document.getElementById('startButton');
+        const restartButton = document.getElementById('restartButton');
+        const gameOverModal = document.getElementById('gameOverModal');
+        const gameOverImage = document.getElementById('gameOverImage');
+        const gameOverAd = document.getElementById('gameOverAd'); // Re-added reference
+        const gameCover = document.getElementById('gameCover'); // Reference to the new game cover div
+
+        // --- Image Loading ---
+        // Function to handle image loading completion
+        function imageLoaded() {
+            imagesLoaded++;
+            if (imagesLoaded === totalImagesToLoad) {
+                // All game-critical images are loaded, now we can safely resize and potentially start the game
+                resizeCanvas();
+                // Start the continuous drawing loop
+                gameLoop(); // Start gameLoop immediately to draw road/car on cover
+            }
+        }
+
+        // Load player car image
+        playerCar.image.onload = imageLoaded;
+        playerCar.image.onerror = () => console.error("Failed to load player car image.");
+
+        // Load enemy car images
+        enemyCarImagePaths.forEach(src => {
+            const img = new Image();
+            img.src = src;
+            img.onload = imageLoaded;
+            img.onerror = () => console.error(`Failed to load enemy car image: ${src}`);
+            loadedEnemyImages.push(img);
+        });
+
+        // --- Game Functions ---
+
+        // Function to resize canvas and adjust player car position
+        function resizeCanvas() {
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight - 80; // Account for info bar
+            playerCar.x = canvas.width / 2 - playerCar.width / 2; // Recenter player car
+            playerCar.y = canvas.height - 100; // Keep player car at bottom
+        }
+
+        // Initial resize and add event listener for future resizes
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas(); // Call once on load
+
+        // Draw image car
+        function drawImageCar(car) {
+            // Only draw if the image is loaded and valid
+            if (car.image && car.image.complete && car.image.naturalWidth > 0) {
+                ctx.drawImage(car.image, car.x, car.y, car.width, car.height);
+            } else {
+                // Fallback: Draw a colored rectangle if image fails to load
+                ctx.fillStyle = 'gray';
+                ctx.fillRect(car.x, car.y, car.width, car.height);
+            }
+        }
+
+        // Draw player car
+        function drawPlayerCar() {
+            drawImageCar(playerCar);
+        }
+
+        // Draw enemy car
+        function drawEnemyCar(car) {
+            // Only draw enemy cars if the game is running
+            if (gameRunning) {
+                drawImageCar(car);
+            }
+        }
+
+        // Draw road lines (no logos)
+        function drawRoadElements() {
+            ctx.fillStyle = '#fff'; // White lines
+            const numLines = Math.ceil(canvas.height / (roadLineHeight + roadLineGap));
+            const centerLineX = canvas.width / 2 - 5; // Center line width 10px
+
+            for (let i = 0; i < numLines; i++) {
+                // Left lane divider
+                ctx.fillRect(centerLineX - 60, (i * (roadLineHeight + roadLineGap)) + roadLineOffset, 10, roadLineHeight);
+                // Right lane divider
+                ctx.fillRect(centerLineX + 50, (i * (roadLineHeight + roadLineGap)) + roadLineOffset, 10, roadLineHeight);
+                // Center dashed line
+                ctx.fillRect(centerLineX, (i * (roadLineHeight + roadLineGap)) + roadLineOffset, 10, roadLineHeight);
+            }
+
+            roadLineOffset += roadLineSpeed;
+            if (roadLineOffset >= (roadLineHeight + roadLineGap)) {
+                roadLineOffset = 0;
+            }
+        }
+
+        // Spawn new enemy car
+        function spawnEnemyCar() {
+            const laneWidth = canvas.width / 3; // Divide road into 3 conceptual lanes
+            const lane1X = canvas.width / 2 - laneWidth - enemyCarWidth / 2;
+            const lane2X = canvas.width / 2 - enemyCarWidth / 2;
+            const lane3X = canvas.width / 2 + laneWidth - enemyCarWidth / 2;
+
+            const lanes = [lane1X, lane2X, lane3X];
+            const randomLane = lanes[Math.floor(Math.random() * lanes.length)];
+
+            // Select a random loaded enemy car image
+            const randomImage = loadedEnemyImages[Math.floor(Math.random() * loadedEnemyImages.length)];
+
+            enemyCars.push({
+                x: randomLane,
+                y: -enemyCarHeight, // Start above the canvas
+                width: enemyCarWidth,
+                height: enemyCarHeight,
+                speed: enemyCarSpeed + Math.random() * 2, // Slightly varied speed
+                image: randomImage // Assign the loaded Image object
+            });
+        }
+
+        // Update game state
+        function update() {
+            if (!gameRunning) return; // Only update game logic if game is running
+
+            // Move enemy cars and remove if off-screen
+            for (let i = 0; i < enemyCars.length; i++) {
+                enemyCars[i].y += enemyCars[i].speed;
+                if (enemyCars[i].y > canvas.height) {
+                    enemyCars.splice(i, 1);
+                    i--; // Adjust index after removal
+                    score++;
+                    scoreDisplay.textContent = score;
+                }
+            }
+
+            // Spawn new enemy cars
+            const currentTime = Date.now();
+            if (currentTime - lastEnemySpawnTime > enemySpawnInterval - Math.min(score * 5, 800)) { // Increase difficulty
+                spawnEnemyCar();
+                lastEnemySpawnTime = currentTime;
+            }
+
+            // Check for collisions
+            checkCollisions();
+        }
+
+        // Draw collision particles
+        function drawCollisionParticles() {
+            for (let i = 0; i < collisionParticles.length; i++) {
+                const p = collisionParticles[i];
+                ctx.fillStyle = `rgba(${p.color.r}, ${p.color.g}, ${p.color.b}, ${p.alpha})`;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Update particle properties
+                p.size += p.speed;
+                p.alpha -= 0.02; // Fade out
+                if (p.alpha <= 0) {
+                    collisionParticles.splice(i, 1);
+                    i--;
+                }
+            }
+        }
+
+        // Check for collisions between player and enemy cars
+        function checkCollisions() {
+            for (let i = 0; i < enemyCars.length; i++) {
+                const enemy = enemyCars[i];
+
+                // Simple AABB collision detection
+                if (playerCar.x < enemy.x + enemy.width &&
+                    playerCar.x + playerCar.width > enemy.x &&
+                    playerCar.y < enemy.y + enemy.height &&
+                    playerCar.y + playerCar.height > enemy.y) {
+                    // Collision detected!
+                    gameRunning = false; // Stop game immediately
+                    cancelAnimationFrame(animationFrameId); // Stop game loop
+
+                    // Create collision particles at the collision point
+                    const collisionX = playerCar.x + playerCar.width / 2;
+                    const collisionY = playerCar.y + playerCar.height / 2;
+
+                    for (let j = 0; j < 15; j++) { // Create 15 particles for the effect
+                        collisionParticles.push({
+                            x: collisionX + (Math.random() - 0.5) * 60, // Spread around collision point
+                            y: collisionY + (Math.random() - 0.5) * 60,
+                            size: Math.random() * 8 + 3, // Random size
+                            alpha: 1,
+                            speed: Math.random() * 3 + 1, // Random speed
+                            color: { r: 255, g: Math.floor(Math.random() * 150), b: 0 } // Red to orange/yellow
+                        });
+                    }
+
+                    // Call game over after a short delay to allow particles to draw once
+                    setTimeout(() => {
+                        gameOver(); // This will show the modal
+                    }, 150); // Small delay to show the effect
+                    return; // Exit the loop as game is over
+                }
+            }
+        }
+
+        // Game over function
+        function gameOver() {
+            gameRunning = false;
+            collisionParticles.length = 0; // Clear particles when modal is shown
+            showModal(); // Show the insurance pop-up
+            // The gameCover should NOT be shown here. It only appears on initial load.
+            // The restart button and ad will be shown after "Okay, Got It!"
+            restartButton.style.display = 'none'; // Ensure hidden until "Okay, Got It!"
+            gameOverAd.classList.remove('active'); // Ensure hidden until "Okay, Got It!"
+        }
+
+        // Game loop (animation)
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas
+
+            drawRoadElements(); // Draw road lines
+            drawPlayerCar(); // Draw player car
+
+            // Draw all enemy cars only if game is running
+            if (gameRunning) {
+                enemyCars.forEach(drawEnemyCar);
+            }
+
+            drawCollisionParticles(); // Draw collision particles
+
+            update(); // Update game state (only runs game logic if gameRunning is true)
+
+            // Continue loop always to keep road/player car visible
+            animationFrameId = requestAnimationFrame(gameLoop);
+        }
+
+        // Start game function
+        function startGame() {
+            // Only start if all images are loaded
+            if (imagesLoaded !== totalImagesToLoad) {
+                console.log("Images are still loading. Please wait...");
+                return;
+            }
+
+            score = 0;
+            scoreDisplay.textContent = score;
+            enemyCars.length = 0; // Clear existing enemy cars
+            collisionParticles.length = 0; // Clear any lingering particles
+            gameRunning = true;
+            lastEnemySpawnTime = Date.now(); // Reset spawn timer
+            gameCover.classList.add('hidden'); // Hide the game cover
+            restartButton.style.display = 'none'; // Ensure restart button is hidden
+            gameOverAd.classList.remove('active'); // Ensure ad is hidden
+            // gameLoop is already running, no need to call it here.
+        }
+
+        // Restart game function
+        function restartGame() {
+            startGame(); // Simply call game again
+        }
+
+        // Keyboard input handler
+        document.addEventListener('keydown', (e) => {
+            if (!gameRunning) return;
+
+            if (e.key === 'ArrowLeft' || e.key === 'a') {
+                playerCar.x = Math.max(0, playerCar.x - playerCar.speed * 10); // Move left
+            } else if (e.key === 'ArrowRight' || e.key === 'd') {
+                playerCar.x = Math.min(canvas.width - playerCar.width, playerCar.x + playerCar.speed * 10); // Move right
+            }
+        });
+
+        // Touch input handler for mobile
+        let touchStartX = 0;
+        canvas.addEventListener('touchstart', (e) => {
+            if (!gameRunning) return;
+            touchStartX = e.touches[0].clientX;
+        });
+
+        canvas.addEventListener('touchmove', (e) => {
+            if (!gameRunning) return;
+            const touchCurrentX = e.touches[0].clientX;
+            const deltaX = touchCurrentX - touchStartX;
+
+            // Adjust player car position based on touch movement
+            playerCar.x = Math.min(canvas.width - playerCar.width, Math.max(0, playerCar.x + deltaX * 0.5)); // Multiply by 0.5 for smoother movement
+            touchStartX = touchCurrentX; // Update start position for continuous movement
+        });
+
+
+        // --- Modal Functions ---
+        function showModal() {
+            gameOverModal.classList.add('active');
+        }
+
+        // Function to handle "Okay, Got It!" click, hiding modal and showing post-game buttons/ads
+        function hideModalAndShowPostGame() {
+            gameOverModal.classList.remove('active'); // Hide the modal
+            restartButton.style.display = 'inline-block'; // Show restart button
+            gameOverAd.classList.add('active'); // Show the medium rectangle ad
+        }
+
+        // Event listeners for buttons
+        startButton.addEventListener('click', startGame);
+        restartButton.addEventListener('click', restartGame); // Add event listener for the external restart button
+
+        // Initial setup on window load
+        window.onload = function() {
+            // All images are handled by their onload events.
+            // resizeCanvas() is called once all images are loaded.
+            // The game starts when the user clicks the "Start Game" button.
+            // Ensure gameCover is visible on initial load
+            gameCover.classList.remove('hidden');
+        };
+    </script>
+</body>
+</html>
