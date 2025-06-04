@@ -19,10 +19,8 @@
 
         .game-container {
             position: relative;
-            width: 100%;
-            max-width: 400px; /* Max width for the game area */
-            height: 80vh; /* Responsive height */
-            max-height: 700px; /* Max height for the game area */
+            width: 300px; /* Fixed width as requested */
+            height: 600px; /* Fixed height as requested */
             background-color: #1e40af; /* Road background */
             border-radius: 15px;
             box-shadow: 0 10px 20px #1e40af;
@@ -63,15 +61,28 @@
             display: none;
         }
 
+        /* New styling for the content card on the cover */
+        .cover-content-card {
+            background-color: rgba(255, 255, 255, 0.2); /* Semi-transparent white */
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            max-width: 90%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
         #gameCover h2 {
-            font-size: 1.8em;
+            font-size: 1.2em;
             margin-bottom: 5px;
             color: #fff; /* Ensure text is visible on background */
             text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
         }
 
         #gameCover p {
-            font-size: 1.2em;
+            font-size: 0.8em;
             margin-top: 0;
             margin-bottom: 30px;
             color: #fff; /* Ensure text is visible on background */
@@ -218,28 +229,28 @@
 
         .modal-content h2 {
             color: #dc3545; /* Red for danger */
-            margin-bottom: 10px; /* Reduced margin */
-            font-size: 1.5em; /* Reduced font size */
+            margin-bottom: 5px; /* Reduced margin */
+            font-size: 1.0em; /* Reduced font size */
         }
 
         .modal-content p {
             font-size: 1em; /* Reduced font size */
             color: #555;
             line-height: 1.4; /* Reduced line height */
-            margin-bottom: 15px; /* Reduced margin */
+            margin-bottom: 5px; /* Reduced margin */
         }
 
         .modal-buttons {
             display: flex;
             flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
             justify-content: center;
-            gap: 15px; /* Space between buttons */
-            margin-top: 20px; /* Space above buttons */
+            gap: 10px; /* Space between buttons */
+            margin-top: 10px; /* Space above buttons */
         }
 
         .modal-content .modal-button {
-            padding: 12px 20px;
-            font-size: 1em;
+            padding: 8px 8px;
+            font-size: 14px;
             font-weight: bold;
             color: #fff;
             border: none;
@@ -281,34 +292,37 @@
             border-radius: 8px;
         }
 
-        /* Example for a medium rectangle ad within the game container (requires careful positioning) */
+        /* Ad medium rectangle styling */
         .ad-medium-rectangle {
-    width: 300px;
-    height: 250px;
-
-    /* Position relative to its parent (.button-container) for stacking */
-    position: relative;
-    margin-bottom: 50px; /* Space between ad and restart button */
-    text-align: center;
-    /* Removed line-height as it's not suitable for image centering */
-    font-size: 14px;
-    color: #777;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    /* Initially hidden */
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
-
-    /* New properties for centering content (including images) */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
+            width: 300px;
+            height: 250px; /* Adjusted height to 250px */
+            position: relative;
+            margin-bottom: 15px; /* Space between ad and restart button */
+            text-align: center;
+            font-size: 14px;
+            color: #777;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            display: flex; /* Use flexbox for centering content */
+            justify-content: center; /* Center horizontally */
+            align-items: center; /* Center vertically */
+            overflow: hidden; /* Hide overflowing parts of the image */
+        }
 
         .ad-medium-rectangle.active {
             opacity: 1;
             visibility: visible;
+        }
+
+        /* Styling for image inside the ad container */
+        .ad-medium-rectangle img {
+            max-width: 100%; /* Ensure image fits within the ad width */
+            max-height: 100%; /* Ensure image fits within the ad height */
+            object-fit: contain; /* Scale image to fit, maintaining aspect ratio */
+            border-radius: 8px; /* Match ad container border-radius */
         }
 
         /* Style for links wrapping images/ads */
@@ -323,17 +337,19 @@
     <div class="game-container">
         <!-- Game Cover overlay -->
         <div id="gameCover">
-            <h2>FAMILY ACCIDENT CARE</h2>
-            <p>INSURANCE POLICY</p>
-            <p>SAFETY FIRST !</p>
-            <!-- Start button is now inside the gameCover -->
-            <button id="startButton" class="game-button"><span class="button-text">Play</span></button>
+            <div class="cover-content-card">
+                <p>A fun way to learn about safety and insurance.</p>
+                
+                <p>SAFETY FIRST !</p>
+                <!-- Start button is now inside the gameCover -->
+                <button id="startButton" class="game-button"><span class="button-text">Play</span></button>
+            </div>
         </div>
 
         <div class="game-info">
             <div class="score-display">Score: <span id="score">0</span></div>
             <!-- Replaced game-title with an image for the logo -->
-            <img id="gameLogo" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRzfv8vz8DcO8PhbVvOkr9Zirv07WQFUMWAuf1zAqYaKpW0xmm8xEo0BhznIixEgjuX4w&usqp=CAU" alt="Star Health Logo">
+            <img id="gameLogo" src="https://companieslogo.com/img/orig/STARHEALTH.NS_BIG.D-db7c71ae.png" alt="Star Health Logo">
         </div>
         <canvas id="gameCanvas"></canvas>
         <div class="button-container">
@@ -341,8 +357,7 @@
             <!-- Wrapped gameOverAd with an anchor tag -->
             <a href="https://www.starhealth.in/" target="_blank" class="ad-link">
                 <div id="gameOverAd" class="ad-medium-rectangle">
-
-                    <img id="gameOverImage" src="https://i.postimg.cc/G28twty2/500708087-1120920826742587-3969943424233215327-n.jpg" alt="Game Over - Get Star Health Insurance">
+                    <img src="https://i.postimg.cc/G28twty2/500708087-1120920826742587-3969943424233215327-n.jpg" alt="Game Over - Get Star Health Insurance">
                 </div>
             </a>
             <!-- Restart button remains here, hidden by default -->
@@ -356,8 +371,8 @@
                 <a href="https://www.starhealth.in/" target="_blank" class="ad-link">
                     <img id="gameOverImage" src="https://5.imimg.com/data5/AP/MO/MY-799628/star-accident-care-1-500x500.jpg" alt="Game Over - Get Star Health Insurance">
                 </a>
-                <p>Oh no! A collision can have real-world consequences. Don't let unexpected events derail your financial well-being.</p>
-                <p><strong>Protect yourself and your loved ones. Get Star Health Insurance now!</strong></p>
+                
+                <p><strong>Accident! Secure your well-being. Explore Star Health Insurance.</strong></p>
                 <div class="modal-buttons">
                     <button class="modal-button close-button" onclick="hideModalAndShowPostGame()">Okay, Got It!</button>
                     <a href="https://www.starhealth.in/" target="_blank" class="modal-button more-info-button">Get More Info</a>
@@ -399,9 +414,8 @@
         let lastEnemySpawnTime = 0;
         const enemyCarImagePaths = [
             'https://i.postimg.cc/WzGMVdPj/1.png',
-'https://i.postimg.cc/WpgmgHqK/2.png',
-'https://i.postimg.cc/Mp088v1K/3.png', 
-         
+            'https://i.postimg.cc/WpgmgHqK/2.png',
+            'https://i.postimg.cc/Mp088v1K/3.png',
         ];
         const loadedEnemyImages = []; // Array to store loaded Image objects
 
@@ -683,19 +697,48 @@
 
         // Touch input handler for mobile
         let touchStartX = 0;
+        let isDragging = false; // Flag to distinguish tap from drag
+
         canvas.addEventListener('touchstart', (e) => {
             if (!gameRunning) return;
+            e.preventDefault(); // Prevent default touch behavior (like scrolling)
             touchStartX = e.touches[0].clientX;
+            isDragging = false; // Assume it's a tap initially
         });
 
         canvas.addEventListener('touchmove', (e) => {
             if (!gameRunning) return;
+            e.preventDefault(); // Prevent default touch behavior (like scrolling)
             const touchCurrentX = e.touches[0].clientX;
             const deltaX = touchCurrentX - touchStartX;
 
-            // Adjust player car position based on touch movement
-            playerCar.x = Math.min(canvas.width - playerCar.width, Math.max(0, playerCar.x + deltaX * 0.5)); // Multiply by 0.5 for smoother movement
-            touchStartX = touchCurrentX; // Update start position for continuous movement
+            // If deltaX is significant, it's a drag
+            if (Math.abs(deltaX) > 5) { // Small threshold to distinguish from accidental micro-movements
+                isDragging = true;
+                playerCar.x = Math.min(canvas.width - playerCar.width, Math.max(0, playerCar.x + deltaX * 0.5));
+                touchStartX = touchCurrentX; // Update start position for continuous movement
+            }
+        });
+
+        canvas.addEventListener('touchend', (e) => {
+            if (!gameRunning) return;
+
+            if (!isDragging) { // If it was not a drag, treat as a tap
+                const tapX = e.changedTouches[0].clientX;
+                const canvasRect = canvas.getBoundingClientRect(); // Get canvas position relative to viewport
+                const tapXRelativeToCanvas = tapX - canvasRect.left;
+
+                const tapThreshold = canvas.width / 2; // Divide canvas into left/right halves
+
+                if (tapXRelativeToCanvas < tapThreshold) {
+                    // Tap on left half, move car left by a fixed amount
+                    playerCar.x = Math.max(0, playerCar.x - playerCar.width * 1.5); // Move by 1.5 car widths
+                } else {
+                    // Tap on right half, move car right by a fixed amount
+                    playerCar.x = Math.min(canvas.width - playerCar.width, playerCar.x + playerCar.width * 1.5); // Move by 1.5 car widths
+                }
+            }
+            isDragging = false; // Reset drag flag
         });
 
 
